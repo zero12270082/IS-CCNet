@@ -1,0 +1,7 @@
+# @package ds
+class: img_dataset
+name: lcdp_data.test
+input:
+  - E:\CODE\image_retouching\CSEC\dataset\1-6\test-input\exp1/*
+GT:
+  - E:\CODE\image_retouching\CSEC\dataset\1-6\test_gt1/*
