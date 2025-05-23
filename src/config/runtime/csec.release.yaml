@@ -1,0 +1,37 @@
+# @package runtime
+
+defaults:
+    - csecnet.default
+
+loss:
+    ltv: 0 # ltv applied on the FINAL OUTPUT.
+    cos: 0.5 # cos similarity loss
+    weighted_loss: 0 # weighted loss instead of l1loss
+    tvloss1: 0.01 # tvloss applied on the illumination
+    tvloss2: 0.01 # tvloss applied on the inverse illumination
+    tvloss1_new: 0.01
+    tvloss2_new: 0.01
+    color_loss: 0.5
+    l1_loss: 1.0 # default pixel-wise l1 loss
+    ssim_loss: 0.01
+    psnr_loss: 0.01
+    illumap_loss: 0.01 # constraint illumap1 + illumap2 -> 1
+    hist_loss: 0
+    inter_hist_loss: 0
+    vgg_loss: 0.01
+    l_spa: 0.5
+
+backbone: bilateral_upsample_net
+use_attn_map: false
+share_weights: true
+
+
+bilateral_upsample_net:
+    backbone: hist-unet
+    hist_unet:
+        guide_feature_from_hist: true
+        region_num: 2
+        drconv_position: [0, 1]
+        channel_nums: [16, 32, 64, 128, 256]
+
+#img_dirpath_OUT: E:\CODE\image_retouching\CSEC-test3\Image-Adaptive-3DLUT-master-test\data\rg\input\JPG\480p

@@ -1,0 +1,7 @@
+# @package ds
+class: img_dataset
+name: lcdp_data.train
+input:
+  - E:\CODE\image_retouching\CSEC\dataset\input/*
+GT:
+  - E:\CODE\image_retouching\CSEC\dataset\gt_1/*
