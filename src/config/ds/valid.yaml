@@ -2,6 +2,6 @@
 class: img_dataset
 name: lcdp_data.valid
 input:
-  - E:\CODE\image_retouching\CSEC\dataset\input/*
+  - your/dataset/path/*
 GT:
-  - E:\CODE\image_retouching\CSEC\dataset\gt_1/*
+  - your/dataset/path/*

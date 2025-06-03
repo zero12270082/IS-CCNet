@@ -34,4 +34,3 @@ bilateral_upsample_net:
         drconv_position: [0, 1]
         channel_nums: [16, 32, 64, 128, 256]
 
-#img_dirpath_OUT: E:\CODE\image_retouching\CSEC-test3\Image-Adaptive-3DLUT-master-test\data\rg\input\JPG\480p

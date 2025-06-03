@@ -136,8 +136,8 @@ def main(config):
     )
     print("Trainer initailized.")
 
-    # training loop# 从model.csecnet模块导入LitModel类，作为模型类
-    from model.csecnet import LitModel as ModelClass
+    # training loop# 从mode.csecnet模块导入LitModel类，作为模型类
+    from model.ISCC import LitModel as ModelClass
     # 根据是否存在检查点路径和是否恢复训练，加载模型或继续训练
     # 如果提供了检查点路径且未启用继续训练，则加载检查点并从第0步开始训练。
     if opt.checkpoint_path and not opt.resume_training:

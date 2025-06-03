@@ -74,7 +74,7 @@ def main(opt):
     print("Running config:", opt)
 
     # 加载模型
-    from model.csecnet import LitModel as ModelClass
+    from model.ISCC import LitModel as ModelClass
     ckpt = opt[CHECKPOINT_PATH]
     assert ckpt, "请提供有效的检查点路径！"
     model = ModelClass.load_from_checkpoint(ckpt, opt=opt)

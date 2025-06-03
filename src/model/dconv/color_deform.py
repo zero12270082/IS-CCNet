@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-# COSE模块
+# ACCM模块
 class ColorDeformConv2d(nn.Module):
     def __init__(
         self,

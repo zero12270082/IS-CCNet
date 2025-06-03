@@ -1,7 +1,7 @@
 import os
 from collections import OrderedDict
-from .CIT import MEC_CIT
-from .ODConv2d import ODConv2d
+from .CTB import MEC_CIT
+from .ODC import ODConv2d
 from .hwd import Down_wt
 import os
 import torchvision.utils
@@ -338,28 +338,26 @@ class ResidualBlock(nn.Module):
     # 定义了DeepWBNet类，它继承自nn.Module
 
 
-# class SCAM(nn.Module):
-#     """通道注意力机制。
+class SCAM(nn.Module):
+    """通道注意力机制。
 
-#     参数：
-#         num_feat (int): 中间特征的通道数。
-#         squeeze_factor (int): 通道压缩因子。默认值：16。
-#     """
+    参数：
+        num_feat (int): 中间特征的通道数。
+        squeeze_factor (int): 通道压缩因子。默认值：16。
+    """
 
-#     def __init__(self, num_feat, squeeze_factor=3):  # 初始化函数
-#         super(SCAM, self).__init__()
-#         self.attention = nn.Sequential(  # 定义顺序容器
-#             nn.AdaptiveAvgPool2d(1),  # 自适应平均池化层
-#             nn.Conv2d(num_feat, num_feat // squeeze_factor, 1, padding=0),  # 卷积层降低通道数
-#             nn.ReLU(inplace=True),  # ReLU 激活函数
-#             nn.Conv2d(num_feat // squeeze_factor, num_feat, 1, padding=0),  # 卷积层恢复通道数
-#             nn.Sigmoid())  # Sigmoid 激活函数
+    def __init__(self, num_feat, squeeze_factor=3):  # 初始化函数
+        super(SCAM, self).__init__()
+        self.attention = nn.Sequential(  # 定义顺序容器
+            nn.AdaptiveAvgPool2d(1),  # 自适应平均池化层
+            nn.Conv2d(num_feat, num_feat // squeeze_factor, 1, padding=0),  # 卷积层降低通道数
+            nn.ReLU(inplace=True),  # ReLU 激活函数
+            nn.Conv2d(num_feat // squeeze_factor, num_feat, 1, padding=0),  # 卷积层恢复通道数
+            nn.Sigmoid())  # Sigmoid 激活函数
 
-#         # down_wt = Down_wt(in_ch=num_feat, out_ch=num_feat)
-#     def forward(self, x):  # 前向传播函数
-#         # x = self.down_wt(x)
-#         y = self.attention(x)  # 计算注意力
-#         return x * y  # 将原始输入与注意力相乘以增强特征
+    def forward(self, x):  # 前向传播函数
+        y = self.attention(x)  # 计算注意力
+        return x * y  # 将原始输入与注意力相乘以增强特征
 
 # RCUNet空间一致性损失  RECnet 曝光对比正则化约束 颜色损失
 class LitModel(SingleNetBaseModel):
@@ -370,7 +368,7 @@ class LitModel(SingleNetBaseModel):
         self.weighted_loss = WeightedL1Loss()# 加权的L1损失
         self.tvloss = L_TV()# 总变差损失，用于图像平滑
         self.ltv2 = LTVloss() # 另一种总变差损失
-        # self.cos = torch.nn.CosineSimilarity(1, 1e-8)
+        self.cos = torch.nn.CosineSimilarity(1, 1e-8)
         # self.color = L_color() # 颜色损失
         # self.spa = L_spa() #实现空间损失
         self.histloss = HistogramLoss() # 直方图损失
@@ -393,11 +391,11 @@ class LitModel(SingleNetBaseModel):
             # 余弦相似度损失，通过1减去余弦相似度的平均值来计算
             # COLOR_LOSS: lambda: self.color(output_batch),
             # SPATIAL_LOSS: lambda: self.spa(output_batch, gt_batch),
-            # COS_LOSS: lambda: (1 - self.cos(output_batch, gt_batch).mean())
-            # * 0.5,
-            # COS_LOSS
-            # + "2": lambda: 1
-            # - F.sigmoid(self.cos(output_batch, gt_batch).mean()),
+            COS_LOSS: lambda: (1 - self.cos(output_batch, gt_batch).mean())
+            * 0.5,
+            COS_LOSS
+            + "2": lambda: 1
+            - F.sigmoid(self.cos(output_batch, gt_batch).mean()),
             # 总变差损失
             LTV_LOSS: lambda: self.tvloss(output_batch),
             # 针对特定中间结果的两种总变差损失
@@ -483,8 +481,8 @@ class LitModel(SingleNetBaseModel):
             elif k in {ILLU_MAP, INVERSE_ILLU_MAP, BRIGHTEN_INPUT, DARKEN_INPUT}:  # 如果是其他重要结果
                 # 直接保存处理后的图像
                 torchvision.utils.save_image(v, dirpath / fname)  # 保存图像
-            elif k == NORMAL:  # 如果是伪法线图
-                # 保存伪法线图像
+            elif k == NORMAL:
+
                 torchvision.utils.save_image(v, dirpath / fname)  # 保存图像
             else:
                 self.save_img_batch(v, dirpath, fname)  # 保存图像批次
@@ -531,7 +529,6 @@ class DeepWBNet(nn.Module):
         # 定义一个下采样器，使用双三次插值将输入x的大小调整为256x256
 
         self.down_sampler = Down_wt(3,3)
-
         # 自适应采样
         # self.down_sampler = MySampler(
         #     sampler_input_resolution=sampler_input_resolution, sampler_output_resolution=sampler_output_resolution)  # 采样器
@@ -540,7 +537,6 @@ class DeepWBNet(nn.Module):
         # 定义输出网络，使用非局部块提高效率
         # Use non-local block for efficiency.
         nf = 32  # 特征通道数
-        # out_net是伪法线生成部分的网络也是COMO部分的网络
         self.out_net = nn.Sequential(
             nn.Conv2d(9, nf, 3, 1, 1),# 输入通道数为9，输出通道数为nf，卷积核大小为3
             # 激活函数，ReLU（Rectified Linear Unit），inplace=True表示直接在原变量上进行修改，节省内存
@@ -607,7 +603,7 @@ class DeepWBNet(nn.Module):
             )
 
             self.mugi = MuGIBlock(3)
-            # self.scam = SCAM(3)  # 实例化 SCAM 模块
+            self.scam = SCAM(3)  # 实例化 WAEM 模块
             self.cit = MEC_CIT()
             self.ODConv2d = ODConv2d()
             # self.hwd = Down_wt()
@@ -665,13 +661,8 @@ class DeepWBNet(nn.Module):
         darken_x1_od = self.ODConv2d(darken_x1)
         print(f" brighten_x1_od min={brighten_x1_od.min()}, max={brighten_x1_od.max()}")
         print(f" darken_x1_od min={darken_x1_od.min()}, max={darken_x1_od.max()}")
-        # 确保增强后的图像在合理范围内
-        # brighten_x1 = torch.clamp(brighten_x1, 0, 1)
-        # darken_x1 = torch.clamp(darken_x1, 0, 1)
-        brighten_x1=self.cit(brighten_x1)# 先进行一次CIT处理
-        darken_x1=self.cit(darken_x1)# 先进行一次CIT处理
-        # print(f"brighten_x1 shape: {brighten_x1.shape}, darken_x1 shape: {darken_x1.shape}")
-        # brighten_x1, darken_x1 = self.mugi(brighten_x1, darken_x1)
+        brighten_x1=self.cit(brighten_x1)# 先进行一次CTB处理
+        darken_x1=self.cit(darken_x1)# 先进行一次CTB处理
         # 更新self.res字典，存储中间结果
         self.res.update(
             {
@@ -683,59 +674,37 @@ class DeepWBNet(nn.Module):
             }
         )
 
-        # Psuedo Normal Generation:伪法线生成部分
+
         # ──────────────────────────────────────────────────────────
         # 将原始输入x、增强后的brighten_x1和darken_x1拼接后输入到输出网络，得到权重图weight_map
-        # print(x.shape)
-        # print(pseudo_normal.shape)
-        # print(brighten_x1.shape)
-        # print(darken_x1.shape)
+
         weight_map = self.normal_out_net(torch.cat([x, brighten_x1, darken_x1], dim=1))
-        # 检查输入的值
-        # concatenated_input = torch.cat([x, brighten_x1, darken_x1], dim=1)
-        # print(f"concatenated_input shape: {weight_map.shape}")
-        # print(f"concatenated_input min: {weight_map.min()}, max: {weight_map.max()}")
 
         # 从weight_map中分离出三个通道的权重w1, w2, w3
         w1 = weight_map[:, 0, ...].unsqueeze(1)
         w2 = weight_map[:, 1, ...].unsqueeze(1)
         w3 = weight_map[:, 2, ...].unsqueeze(1)
-        # 添加调试信息，检查 w1, w2, w3 是否正确生成
-        # print(f"w1 min: {w1.min()}, max: {w1.max()}")
-        # print(f"w2 min: {w2.min()}, max: {w2.max()}")
-        # print(f"w3 min: {w3.min()}, max: {w3.max()}")
+
         # 根据权重图计算输出图像out
         out = x * w1 + brighten_x1 * w2 + darken_x1 * w3
-
-        # 将输出图像out作为伪法线图pseudo_normal
-        # pseudo_normal1=self.cit(out)  # 先进行一次CIT处理
-        # pseudo_normal = pseudo_normal1
-
         pseudo_normal=out
-        # pseudo_normal = torch.clamp(pseudo_normal, 0, 1)
-        # self.res.update({NORMAL: pseudo_normal})
-
-        # 添加调试信息，检查 pseudo_normal 是否正确生成
-        # print(f"pseudo_normal shape: {pseudo_normal.shape}")
-        # print(f"pseudo_normal min: {pseudo_normal.min()}, max: {pseudo_normal.max()}")
 
         self.res.update({NORMAL: pseudo_normal})
         pseudo_normal_od = self.ODConv2d(pseudo_normal)
         print(f" pseudo_normal_od min={pseudo_normal_od.min()}, max={pseudo_normal_od.max()}")
         # Deformation:变形部分
         # ──────────────────────────────────────────────────────────
-        # 使用可变形卷积处理伪法线图pseudo_normal，得到变形后的图像brighten_x2和darken_x2
+        # 使用可变形卷积得到变形后的图像brighten_x2和darken_x2
         brighten_x2 = self.over_deform(x=pseudo_normal_od, ref=brighten_x1_od)
         darken_x2 = self.under_deform(x=pseudo_normal_od, ref=darken_x1_od)
-        brighten_x2 = self.cit(brighten_x2)  # 再进行一次CIT处理
-        darken_x2 = self.cit(darken_x2)  # 再进行一次CIT处理
+        brighten_x2 = self.cit(brighten_x2)
+        darken_x2 = self.cit(darken_x2)
         # brighten_x2, darken_x2 = self.mugi(brighten_x2, darken_x2)
         # 更新self.res字典，存储变形后的图像
 
-        # COMO  Modulation:调制部分
         # ──────────────────────────────────────────────────────────
-        # 将伪法线图pseudo_normal、变形后的图像brighten_x2和darken_x2拼接后输入到输出网络，得到新的权重图
-        # x = self.scam(x)
+        # pseudo_normal、变形后的图像brighten_x2和darken_x2拼接后输入到输出网络，得到新的权重图
+        x = self.scam(x)
         out = self.out_net(
             torch.cat([x, brighten_x2, darken_x2], dim=1)
         )
