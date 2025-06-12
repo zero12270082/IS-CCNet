@@ -18,7 +18,7 @@
 
 > **🔬 Manuscripts submitted *The Visual Computer***  
 > **"Illumination Separation and Adaptive Color Compensation: Enhancing Thangka Image Exposure Correction"**  
-> **Submission ID: ` `**  
+> **Submission ID: `f9d1e22e-e9a3-4585-9e2b-f2a85074764e `**  
 > **DOI: ` https://doi.org/10.5281/zenodo.15582883 `**  
 > **📌 If you use this code in your research, please cite our work!**
 
