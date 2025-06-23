@@ -4,6 +4,8 @@
         <a >WU Ji-yuan</a>
         ·
         <a >ZHANG Xiao-juan</a>
+        ·
+        <a >ZHAO Yang</a>
 
 <div align="center">
 
@@ -16,9 +18,7 @@
 </div>
 
 
-> **🔬 Manuscripts submitted *The Visual Computer***  
 > **"Illumination Separation and Adaptive Color Compensation: Enhancing Thangka Image Exposure Correction"**  
-> **Submission ID: `f9d1e22e-e9a3-4585-9e2b-f2a85074764e `**  
 > **DOI: ` https://doi.org/10.5281/zenodo.15582883 `**  
 > **📌 If you use this code in your research, please cite our work!**
 
@@ -81,8 +81,8 @@ Should you have any questions, feel free to post an issue or contact me at [zhxj
 @article{thangka2025tvc,
   title = {Illumination Separation and Adaptive Color Compensation: Enhancing Thangka Image Exposure Correction},
   author = {WU Ji-yuan and ZHANG Xiao-juan},
-  journal = {Submitted to The Visual Computer},
+  journal = {,
   year = {2025},
-  note = {Submission ID: }
+  note = {}
 }
 
